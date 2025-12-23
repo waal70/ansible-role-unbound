@@ -1,21 +1,26 @@
+- name: Remove unbound and config when pihole_enable_unbound is false. Also ends role.
+  ansible.builtin.import_tasks: remove_unbound.yml
+  when: not pihole_enable_unbound
+
 - name: Install unbound
-  ansible.builtin.package:
+  ansible.builtin.apt:
     name: unbound
     state: present
 
 - name: Enable unbound
-  ansible.builtin.service:
+  ansible.builtin.systemd_service:
     name: unbound
     enabled: true
+    masked: false
 
 - name: Create unbound config
   ansible.builtin.template:
     dest: /etc/unbound/unbound.conf
-    src: pi-hole.conf.j2
+    src: unbound-for-pi-hole.conf.j2
     mode: "0644"
   notify: Restart unbound service
 
-- name: Flush handlers
+- name: Flush handlers to restart immediately
   ansible.builtin.meta: flush_handlers
 
 - name: Ensures /etc/dnsmasq.d dir exists
@@ -67,8 +72,9 @@
   notify: Restart unbound service
 
 - name: Check if unbound service is running
-  ansible.builtin.systemd:
+  ansible.builtin.systemd_service:
     name: unbound
+    state: restarted
   register: unbound_status
   retries: 10
   delay: 5

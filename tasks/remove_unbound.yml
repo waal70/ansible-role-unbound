@@ -1,0 +1,32 @@
+---
+- name: Block for service manipulation
+  block:
+    - name: Stop unbound service
+      ansible.builtin.systemd_service:
+        name: unbound
+        state: stopped
+        enabled: false
+        masked: true
+  rescue:
+    - name: Inform the user
+      ansible.builtin.debug:
+        msg: "Service not found most likely not installed, so not stopping"
+
+- name: Remove additional config files
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  with_items:
+    - "/etc/dnsmasq.d/99-edns.conf"
+    - "/etc/unbound/unbound.conf"
+
+- name: Uninstall unbound
+  ansible.builtin.apt:
+    name: unbound
+    state: absent
+    purge: true
+    clean: true
+    autoremove: true
+
+- name: End this role after uninstallation
+  ansible.builtin.meta: end_role

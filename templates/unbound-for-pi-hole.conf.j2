@@ -20,7 +20,7 @@ server:
 
     # You want to leave this to no unless you have *native* IPv6. With 6to4 and
     # Terredo tunnels your web browser should favor IPv4 for the same reasons
-    prefer-ip6: no
+    prefer-ip6: yes
 
     # Use this only when you downloaded the list of primary root servers!
     # If you use the default dns-root-data package, unbound will find it automatically
@@ -81,3 +81,7 @@ server:
 	# Allow the domain (and its subdomains) to contain private addresses.
 	# local-data statements are allowed to contain private addresses too.
 	private-domain: "{{ pihole_local_domain }}"
+
+    # local-zone: "andrecatherine.net" redirect
+    # local-data: "andrecatherine.net 86400 IN AAAA 2a10:3781:3623:2:89dc:ab32:9380:26ae"
+    # local-data: "andrecatherine.net 86400 IN A 10.0.0.180"
