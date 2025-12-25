@@ -10,11 +10,11 @@ server:
     pidfile: "/run/unbound.pid"
 
     interface: 127.0.0.1
-    # Andre: force ipv6 connectivity. Not needed if properly connected through IPv6
-    # interface: ::1
-    # interface: {{ ansible_default_ipv6.address }}
-    # outgoing-interface: {{ ansible_default_ipv6.address }}
-    # outgoing-interface: {{ ansible_default_ipv4.address }}
+    # See notes defaults for the following
+    {% if ipv6_netblock != 'NONE' %}
+    outgoing-interface: {{ hostvars[inventory_hostname]['ipv6_netblock'] | default(ansible_default_ipv6.address) }}
+    outgoing-interface: {{ ansible_default_ipv4.address }}
+    {% endif %}
 
     port: 5335
     do-ip4: yes

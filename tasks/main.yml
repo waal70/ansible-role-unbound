@@ -1,6 +1,37 @@
+---
+# This include_vars allows you to keep your vaulted variables outside of your main repo
+# It assumes the PRIVATE_REPO environment variable is set to the path of your private repo
+# On home-infra, this is done by firstrun.sh.
+# However, this role will not break if you do not have these
+- name: Include vaulted password file
+  ansible.builtin.include_vars:
+    file: "{{ item }}"
+  with_first_found:
+    - files:
+        - "{{ lookup('env', 'PRIVATE_REPO') | default('~') }}/ansible-vault/{{ ansible_role_name }}-vars.yml"
+      skip: true
+
 - name: Remove unbound and config when pihole_enable_unbound is false. Also ends role.
   ansible.builtin.import_tasks: remove_unbound.yml
   when: not pihole_enable_unbound
+
+- name: Set this host's netblock into a fact
+  ansible.builtin.set_fact:
+    ipv6_netblock: "{{ hostvars[inventory_hostname]['ipv6_netblock'] | default('NONE') }}"
+
+- name: Debug the variable
+  ansible.builtin.debug:
+    msg: "netblock is {{ ipv6_netblock }}"
+
+- name: "Unset required sysctl config to allow non-local ipv6 binds"
+  ansible.posix.sysctl:
+    name: "net.ipv6.ip_nonlocal_bind"
+    state: absent
+    reload: true
+
+- name: Include tasks to configure netblock if a netblock is configured
+  ansible.builtin.import_tasks: add_ipv6_netblock.yml
+  when: ipv6_netblock != 'NONE'
 
 - name: Install unbound
   ansible.builtin.apt:

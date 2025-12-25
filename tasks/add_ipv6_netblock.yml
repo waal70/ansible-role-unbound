@@ -1,0 +1,17 @@
+---
+- name: "Set required sysctl config to allow non-local ipv6 binds"
+  ansible.posix.sysctl:
+    name: "net.ipv6.ip_nonlocal_bind"
+    value: 1
+    state: present
+    reload: true
+
+- name: "Add the netblock to the interface and add a route"
+  ansible.builtin.command:
+    cmd: "ip -6 addr add {{ hostvars[inventory_hostname]['ipv6_netblock'] }} dev eth0"
+  changed_when: true
+
+- name: "Add a default route to this netblock"
+  ansible.builtin.command:
+    cmd: "ip -6 route add local {{ hostvars[inventory_hostname]['ipv6_netblock'] }} dev eth0"
+  changed_when: true

@@ -1,3 +1,8 @@
 ---
 # defaults file for waal70.unbound
 pihole_enable_unbound: false
+# If you wish unbound randomizes outgoing IPv6 addresses from a netblock,
+# set the host variable 'ipv6_netblock' with a netblock ("aaaa:bbbb:cccc:dddd::/64")
+# Do not forget to subsequently add a route in your router using this netblock
+# If you do not have this host variable, the outgoing interface defaults to the
+# device's configured IPv4 and IPv6 addresses
