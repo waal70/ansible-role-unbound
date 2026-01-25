@@ -2,3 +2,7 @@
   ansible.builtin.systemd_service:
     name: unbound
     state: restarted
+  register: restart
+  retries: 5
+  delay: 1
+  until: restart.changed

@@ -19,10 +19,6 @@
   ansible.builtin.set_fact:
     ipv6_netblock: "{{ hostvars[inventory_hostname]['ipv6_netblock'] | default('NONE') }}"
 
-- name: Debug the variable
-  ansible.builtin.debug:
-    msg: "netblock is {{ ipv6_netblock }}"
-
 - name: "Unset required sysctl config to allow non-local ipv6 binds"
   ansible.posix.sysctl:
     name: "net.ipv6.ip_nonlocal_bind"
@@ -38,18 +34,18 @@
     name: unbound
     state: present
 
-- name: Enable unbound
-  ansible.builtin.systemd_service:
-    name: unbound
-    enabled: true
-    masked: false
-
 - name: Create unbound config
   ansible.builtin.template:
     dest: /etc/unbound/unbound.conf
     src: unbound-for-pi-hole.conf.j2
     mode: "0644"
   notify: Restart unbound service
+
+- name: Enable unbound
+  ansible.builtin.systemd_service:
+    name: unbound
+    enabled: true
+    masked: false
 
 - name: Flush handlers to restart immediately
   ansible.builtin.meta: flush_handlers
@@ -58,7 +54,7 @@
   ansible.builtin.file:
     path: /etc/dnsmasq.d
     state: directory
-    mode: "0644"
+    mode: "0755"
 
 - name: Create 99-edns.conf config
   ansible.builtin.copy:
