@@ -12,8 +12,8 @@ server:
     interface: 127.0.0.1
     # See notes defaults for the following
     {% if ipv6_netblock != 'NONE' %}
-    outgoing-interface: {{ hostvars[inventory_hostname]['ipv6_netblock'] | default(ansible_default_ipv6.address) }}
-    outgoing-interface: {{ ansible_default_ipv4.address }}
+    outgoing-interface: {{ hostvars[inventory_hostname]['ipv6_netblock'] | default(ansible_facts['default_ipv6'].address) }}
+    outgoing-interface: {{ ansible_facts['default_ipv4'].address }}
     {% endif %}
 
     port: 5335
