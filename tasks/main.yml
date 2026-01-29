@@ -39,16 +39,6 @@
     dest: /etc/unbound/unbound.conf
     src: unbound-for-pi-hole.conf.j2
     mode: "0644"
-  notify: Restart unbound service
-
-- name: Enable unbound
-  ansible.builtin.systemd_service:
-    name: unbound
-    enabled: true
-    masked: false
-
-- name: Flush handlers to restart immediately
-  ansible.builtin.meta: flush_handlers
 
 - name: Ensures /etc/dnsmasq.d dir exists
   ansible.builtin.file:
@@ -61,7 +51,17 @@
     src: 99-edns.conf
     dest: /etc/dnsmasq.d/99-edns.conf
     mode: "0644"
-  notify: Restart unbound service
+
+- name: Ensure unbound is started, unmasked, and enabled
+  ansible.builtin.systemd_service:
+    name: unbound
+    state: restarted
+    enabled: true
+    masked: false
+  register: unbound_status
+  retries: 10
+  delay: 5
+  until: unbound_status.status.ActiveState == 'active'
 
 - name: Populate service facts
   ansible.builtin.service_facts:
@@ -97,15 +97,3 @@
     state: absent
   when: unbound_resolvconf.stat.exists
   notify: Restart unbound service
-
-- name: Check if unbound service is running
-  ansible.builtin.systemd_service:
-    name: unbound
-    state: restarted
-  register: unbound_status
-  retries: 10
-  delay: 5
-  until: unbound_status.status.ActiveState == 'active'
-
-- name: Flush handlers
-  ansible.builtin.meta: flush_handlers
